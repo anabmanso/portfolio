@@ -188,7 +188,8 @@
     document.querySelectorAll("[data-zoom]").forEach(function (trigger) {
       trigger.addEventListener("click", function () {
         var thumb = trigger.querySelector("img");
-        var fc = trigger.closest("figure") && trigger.closest("figure").querySelector("figcaption");
+        var fig = trigger.closest("figure");
+        var fc = fig && (fig.querySelector("[data-cap]") || fig.querySelector("figcaption"));
         big.src = trigger.dataset.zoom;
         big.alt = thumb ? thumb.alt : "";
         cap.textContent = fc ? fc.innerText.trim() : "";
@@ -207,6 +208,76 @@
       trigger.addEventListener("click", function () {
         window.open(trigger.dataset.zoom, "_blank", "noopener");
       });
+    });
+  }
+
+  /* ---------- Abas (respostas das IAs) ---------- */
+  document.querySelectorAll("[data-tabs]").forEach(function (box) {
+    var tabs = Array.prototype.slice.call(box.querySelectorAll('[role="tab"]'));
+    if (!tabs.length) return;
+    var select = function (tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        var panel = document.getElementById(t.getAttribute("aria-controls"));
+        if (panel) panel.hidden = !on;
+      });
+      if (focus) tab.focus();
+    };
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener("click", function () {
+        select(tab, false);
+      });
+      tab.addEventListener("keydown", function (e) {
+        var next = null;
+        if (e.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
+        else if (e.key === "ArrowLeft") next = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if (e.key === "Home") next = tabs[0];
+        else if (e.key === "End") next = tabs[tabs.length - 1];
+        if (next) {
+          e.preventDefault();
+          select(next, true);
+        }
+      });
+    });
+    select(tabs.filter(function (t) {
+      return t.getAttribute("aria-selected") === "true";
+    })[0] || tabs[0], false);
+  });
+
+  /* ---------- Números que contam ao aparecer ---------- */
+  var counters = document.querySelectorAll("[data-count]");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (counters.length && "IntersectionObserver" in window && !reduceMotion) {
+    var pad = function (n, width) {
+      var str = String(n);
+      while (str.length < width) str = "0" + str;
+      return str;
+    };
+    var co = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          var el = entry.target;
+          var end = parseInt(el.dataset.count, 10);
+          var width = el.dataset.count.length;
+          var t0 = null;
+          co.unobserve(el);
+          var step = function (ts) {
+            if (t0 === null) t0 = ts;
+            var p = Math.min((ts - t0) / 1200, 1);
+            el.textContent = pad(Math.round(end * (1 - Math.pow(1 - p, 3))), width);
+            if (p < 1) window.requestAnimationFrame(step);
+          };
+          window.requestAnimationFrame(step);
+        });
+      },
+      { threshold: 0.6 }
+    );
+    counters.forEach(function (el) {
+      el.textContent = pad(0, el.dataset.count.length);
+      co.observe(el);
     });
   }
 

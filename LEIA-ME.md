@@ -5,7 +5,8 @@ Site estático em HTML, CSS e JavaScript, sem dependências para instalar.
 ## Arquivos
 
 - `index.html` é a página inicial, com hero, trabalhos, sobre, trajetória e contato.
-- `assessoria-de-imprensa.html`, `reportagem.html` e `podcast.html` são as páginas de cada projeto.
+- `assessoria-de-imprensa.html`, `reportagem.html`, `podcast.html` e `digital-pr.html` são as páginas de cada projeto.
+- `assets/img/digital-pr/` guarda as imagens da campanha da Twygo.
 - `assets/style.css` guarda cores, fontes e layout.
 - `assets/main.js` cuida da troca de idioma, do menu no celular, dos vídeos e da ampliação dos recortes.
 - `assets/img/ana-beatriz-manso.jpg` é o retrato.
